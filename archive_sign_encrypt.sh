@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Check if required arguments are provided
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 <recipient_email> <file1|dir1> [file2|dir2 ...]"
+    echo "Example: $0 user@example.com file1.txt folder1 file2.txt"
+    exit 1
+fi
+
+# Assign arguments
+RECIPIENT="$1"
+shift # Remove the first argument (recipient email), leaving the files/folders
+ITEMS=("$@")
+
+# Check if items (files or directories) exist
+for item in "${ITEMS[@]}"; do
+    if [ ! -e "$item" ]; then
+        echo "Error: Item '$item' does not exist."
+        exit 1
+    fi
+done
+
+# Variables
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+ENCRYPTED_FILE="${TIMESTAMP}_archive.tar.gz.gpg"
+
+# Step 1 & 2: Archive, sign, and encrypt in one pipeline
+echo "Archiving, signing, and encrypting items for $RECIPIENT..."
+tar -cz "${ITEMS[@]}" | gpg --armor --sign --encrypt --recipient "$RECIPIENT" --output "$ENCRYPTED_FILE"
+# Capture PIPESTATUS immediately
+PIPE_STATUS=("${PIPESTATUS[@]}")
+if [ "${PIPE_STATUS[0]}" -ne 0 ] || [ "${PIPE_STATUS[1]}" -ne 0 ]; then
+    echo "Error: Failed to archive, sign, or encrypt."
+    echo "tar exit code: ${PIPE_STATUS[0]}, gpg exit code: ${PIPE_STATUS[1]}"
+    rm -f "$ENCRYPTED_FILE" # Clean up partial output if it exists
+    exit 1
+fi
+
+echo "Success! Encrypted file created: $ENCRYPTED_FILE"
