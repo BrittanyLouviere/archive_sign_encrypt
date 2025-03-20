@@ -24,7 +24,7 @@ done
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 ENCRYPTED_FILE="${TIMESTAMP}_archive.tar.gz.gpg"
 
-# Step 1 & 2: Archive, sign, and encrypt in one pipeline
+# Archive, sign, and encrypt in one pipeline
 echo "Archiving, signing, and encrypting items for $RECIPIENT..."
 tar -cz "${ITEMS[@]}" | gpg --armor --sign --encrypt --recipient "$RECIPIENT" --output "$ENCRYPTED_FILE"
 # Capture PIPESTATUS immediately
