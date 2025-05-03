@@ -25,7 +25,6 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 ENCRYPTED_FILE="${TIMESTAMP}_archive.tar.gz.gpg"
 
 # Archive, sign, and encrypt in one pipeline
-echo "Archiving, signing, and encrypting items for $RECIPIENT..."
 tar -cz "${ITEMS[@]}" | gpg --armor --sign --encrypt --recipient "$RECIPIENT" --output "$ENCRYPTED_FILE"
 # Capture PIPESTATUS immediately
 PIPE_STATUS=("${PIPESTATUS[@]}")
@@ -36,4 +35,4 @@ if [ "${PIPE_STATUS[0]}" -ne 0 ] || [ "${PIPE_STATUS[1]}" -ne 0 ]; then
     exit 1
 fi
 
-echo "Success! Encrypted file created: $ENCRYPTED_FILE"
+echo "$ENCRYPTED_FILE"
